@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prudent - Better Today for a Better Tomorrow</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Dark Theme color schema */
+        :root {
+            --bg-dark-primary: #101418;
+            --bg-dark-secondary: #1c232e;
+            --text-light-primary: #e6f1ff;
+            --text-light-secondary: #8892b0;
+            --brand-red: #ef4444;
+            --brand-red-dark: #dc2626;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-light-primary);
+            background-color: var(--bg-dark-primary);
+            cursor: none; /* Hide the default cursor */
+        }
+        
+        /* Custom Animated Cursor */
+        .cursor-dot, .cursor-outline, .cursor-pointer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.2s ease-out, width 0.3s ease-out, height 0.3s ease-out, opacity 0.3s ease-out;
+        }
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--brand-red);
+        }
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--brand-red);
+        }
+        .cursor-pointer {
+            width: 40px;
+            height: 40px;
+            color: var(--brand-red);
+            opacity: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Cursor hover effects */
+        body:has(a:hover, button:hover, .h-scroll-arrow:hover) .cursor-outline {
+            width: 50px;
+            height: 50px;
+            opacity: 0;
+        }
+        body:has(a:hover, button:hover, .h-scroll-arrow:hover) .cursor-dot {
+            opacity: 0;
+        }
+        body:has(a:hover, button:hover, .h-scroll-arrow:hover) .cursor-pointer {
+             opacity: 1;
+        }
+
+        /* Helper Classes */
+        .text-brand-red { color: var(--brand-red); }
+        .bg-brand-red { background-color: var(--brand-red); }
+        
+        /* Header & Navigation */
+        .header-scrolled {
+            background-color: rgba(16, 20, 24, 0.85);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+            padding-bottom: 4px;
+        }
+        .nav-link:hover {
+            color: var(--brand-red);
+        }
+        .nav-link.active {
+            color: var(--brand-red);
+        }
+        .nav-link.active::after {
+            width: 100%;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--brand-red);
+            transition: width 0.3s ease-out;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        /* Improved CTA button animation */
+        .cta-btn {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .cta-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Horizontal Scroll for Industries */
+        .h-scroll-container {
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+        .h-scroll-container::-webkit-scrollbar {
+            display: none; /* Chrome, Safari and Opera */
+        }
+        .industry-card {
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        .industry-card:hover {
+            transform: scale(1.05);
+            background-color: var(--bg-dark-primary);
+        }
+        
+        /* Screen transition styles */
+        .screen {
+             transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .screen.hidden {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            height: 0;
+            overflow: hidden;
+        }
+        
+        /* Scroll Animation Styles */
+        .scroll-animate {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s cubic-bezier(0.645, 0.045, 0.355, 1) 0.2s, transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1) 0.2s;
+        }
+        .scroll-animate.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+    <!-- Custom Cursor Elements -->
+    <div class="cursor-outline"></div>
+    <div class="cursor-dot"></div>
+    <div class="cursor-pointer"><i class="fas fa-arrow-up-right-from-square"></i></div>
+
+    <!-- Header -->
+    <header id="main-header" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" data-screen-link="home" class="text-2xl font-bold tracking-wider">
+                <img src="https://www.prudentbrokers.com/wp-content/themes/prudent/images/logo-dark.png" alt="Prudent Logo" class="h-10 w-auto">
+            </a>
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#" data-screen-link="home" class="nav-link font-semibold active">Home</a>
+                <a href="#" data-screen-link="about-page" class="nav-link font-semibold">About Us</a>
+                <a href="#" data-screen-link="industries-page" class="nav-link font-semibold">Industries</a>
+                <a href="#" data-screen-link="services-page" class="nav-link font-semibold">Services</a>
+                <a href="#" data-screen-link="latest-page" class="nav-link font-semibold">Happenings</a>
+            </nav>
+            <a href="#contact" class="hidden md:inline-block bg-brand-red text-white font-semibold px-5 py-2 rounded-lg hover:bg-brand-red-dark transition-colors cta-btn">Contact</a>
+            <button id="menu-btn" class="md:hidden z-50"><i class="fas fa-bars text-2xl text-white"></i></button>
+        </div>
+    </header>
+
+     <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden fixed inset-0 bg-dark-primary z-40">
+        <nav class="flex flex-col items-center justify-center h-full space-y-8 text-2xl font-semibold">
+            <a href="#" data-screen-link="home" class="mobile-link">Home</a>
+            <a href="#" data-screen-link="about-page" class="mobile-link">About Us</a>
+            <a href="#" data-screen-link="industries-page" class="mobile-link">Industries</a>
+            <a href="#" data-screen-link="services-page" class="mobile-link">Services</a>
+            <a href="#" data-screen-link="latest-page" class="mobile-link">Happenings</a>
+            <a href="#contact" class="mobile-link bg-brand-red text-white px-6 py-3 rounded-lg mt-4">Contact</a>
+        </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <div id="main-content" class="relative">
+        <!-- Home Screen -->
+        <div data-screen="home" class="screen">
+             <main>
+                <!-- Hero Section -->
+                <section class="relative min-h-screen flex items-center justify-center text-white bg-gray-900">
+                    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?q=80&w=1470&auto=format&fit=crop');"></div>
+                    <div class="absolute inset-0 bg-black/70"></div>
+                    <div class="relative z-10 text-center p-6">
+                        <h1 class="text-4xl md:text-6xl font-bold">Better <span class="text-brand-red">Today</span> for a Better <span class="text-brand-red">Tomorrow</span></h1>
+                         <p class="mt-6 text-lg text-light-secondary max-w-2xl mx-auto">Providing expert guidance and innovative insurance solutions to safeguard your future.</p>
+                         <a href="#" data-screen-link="about-page" class="inline-block bg-brand-red text-white font-semibold px-8 py-3 rounded-lg hover:bg-brand-red-dark transition-colors cta-btn mt-8">Discover Prudent</a>
+                    </div>
+                </section>
+
+                <!-- Why Choose Us Snippet -->
+                 <section class="py-24">
+                     <div class="container mx-auto px-6">
+                        <div class="grid md:grid-cols-2 gap-12 items-center">
+                            <div>
+                                <img src="https://images.unsplash.com/photo-1521737852577-68489a10811c?q=80&w=1470&auto=format&fit=crop" alt="Prudent Team" class="rounded-lg shadow-2xl w-full">
+                            </div>
+                            <div class="space-y-4">
+                                <h2 class="text-3xl md:text-4xl font-bold">Why <span class="text-brand-red">Prudent?</span></h2>
+                                <p class="text-lg text-light-secondary">With two decades of experience, we combine deep industry knowledge with a client-first approach to deliver exceptional results.</p>
+                                <ul class="space-y-2 pt-2">
+                                    <li class="flex items-center"><i class="fas fa-check-circle text-brand-red mr-3"></i><span>Tailored Insurance Solutions</span></li>
+                                    <li class="flex items-center"><i class="fas fa-check-circle text-brand-red mr-3"></i><span>Expert Risk Assessment</span></li>
+                                    <li class="flex items-center"><i class="fas fa-check-circle text-brand-red mr-3"></i><span>Dedicated Claims Support</span></li>
+                                </ul>
+                                <a href="#" data-screen-link="about-page" class="inline-block bg-brand-red text-white font-semibold px-6 py-3 rounded-lg hover:bg-brand-red-dark transition-colors cta-btn mt-6">More About Us</a>
+                            </div>
+                        </div>
+                     </div>
+                </section>
+                
+                <!-- Core Services Snippet -->
+                <section class="bg-dark-secondary py-24">
+                     <div class="container mx-auto px-6 text-center">
+                        <h2 class="text-3xl md:text-4xl font-bold">Our Core Services</h2>
+                        <p class="mt-4 text-center text-light-secondary max-w-2xl mx-auto">We offer a comprehensive suite of services to manage your risks effectively.</p>
+                        <div class="mt-12 grid md:grid-cols-3 gap-8">
+                            <div class="bg-dark-primary p-8 rounded-lg space-y-4 text-center"><i class="fas fa-shield-halved text-4xl text-brand-red"></i><h3 class="text-2xl font-bold pt-2">Risk Management</h3><p class="text-light-secondary">Identifying and mitigating risks to protect your business.</p></div>
+                            <div class="bg-dark-primary p-8 rounded-lg space-y-4 text-center"><i class="fas fa-handshake text-4xl text-brand-red"></i><h3 class="text-2xl font-bold pt-2">Insurance Broking</h3><p class="text-light-secondary">Finding the most suitable and cost-effective coverage for you.</p></div>
+                            <div class="bg-dark-primary p-8 rounded-lg space-y-4 text-center"><i class="fas fa-headset text-4xl text-brand-red"></i><h3 class="text-2xl font-bold pt-2">Claims Consulting</h3><p class="text-light-secondary">Expert assistance to ensure a fair and timely settlement.</p></div>
+                        </div>
+                     </div>
+                </section>
+
+                <!-- Testimonial Snippet -->
+                <section class="py-24">
+                     <div class="container mx-auto px-6 text-center max-w-3xl">
+                        <h2 class="text-3xl md:text-4xl font-bold">What Our Clients Say</h2>
+                        <div class="mt-8">
+                            <i class="fas fa-quote-left text-4xl text-brand-red/50"></i>
+                            <p class="text-xl italic text-light-secondary my-4">"Prudent's team provided us with exceptional service and a policy that was perfectly tailored to our needs. Their professionalism and expertise are second to none."</p>
+                            <p class="font-bold text-lg">Jane Smith</p>
+                            <p class="text-light-secondary">COO, Innovate Corp</p>
+                        </div>
+                     </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- About Us Screen -->
+        <div data-screen="about-page" class="screen hidden">
+             <main class="pt-20">
+                <section class="container mx-auto px-6 py-16">
+                    <h1 class="text-4xl md:text-5xl font-bold text-center">About <span class="text-brand-red">Prudent</span></h1>
+                    <div class="mt-12 grid md:grid-cols-2 gap-12 items-start">
+                         <div class="space-y-6">
+                              <h2 class="text-3xl font-bold">Our Mission</h2>
+                              <p class="text-light-secondary leading-relaxed">To provide unparalleled service and innovative solutions in the insurance brokerage industry, empowering our clients to navigate the future with confidence. We are dedicated to building lasting relationships based on trust, transparency, and a deep understanding of our clients' unique needs.</p>
+                              <h2 class="text-3xl font-bold mt-8">Our Values</h2>
+                              <ul class="space-y-3 text-light-secondary">
+                                   <li class="flex items-start"><i class="fas fa-check-circle text-brand-red mt-1 mr-3"></i><span><strong class="text-light-primary">Integrity:</strong> Upholding the highest ethical standards in all our actions.</span></li>
+                                   <li class="flex items-start"><i class="fas fa-check-circle text-brand-red mt-1 mr-3"></i><span><strong class="text-light-primary">Client-Centric:</strong> Placing our clients at the heart of everything we do.</span></li>
+                                   <li class="flex items-start"><i class="fas fa-check-circle text-brand-red mt-1 mr-3"></i><span><strong class="text-light-primary">Excellence:</strong> Continuously striving for excellence and innovation.</span></li>
+                              </ul>
+                         </div>
+                         <div>
+                              <img src="https://images.unsplash.com/photo-1556740738-b6a63e2775df?q=80&w=1470&auto=format&fit=crop" class="rounded-lg shadow-2xl w-full">
+                         </div>
+                    </div>
+                     <div class="mt-24">
+                        <h2 class="text-3xl font-bold text-center mb-12">Meet Our Leadership</h2>
+                        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                            <div class="text-center group"><img src="https://placehold.co/300x300/1c232e/e6f1ff?text=CEO" class="w-40 h-40 rounded-full mx-auto shadow-lg border-4 border-dark-secondary group-hover:border-brand-red transition-all duration-300 transform group-hover:scale-105"><h3 class="mt-4 text-xl font-bold">John Doe</h3><p class="text-brand-red">Chief Executive Officer</p></div>
+                            <div class="text-center group"><img src="https://placehold.co/300x300/1c232e/e6f1ff?text=COO" class="w-40 h-40 rounded-full mx-auto shadow-lg border-4 border-dark-secondary group-hover:border-brand-red transition-all duration-300 transform group-hover:scale-105"><h3 class="mt-4 text-xl font-bold">Jane Smith</h3><p class="text-brand-red">Chief Operating Officer</p></div>
+                            <div class="text-center group"><img src="https://placehold.co/300x300/1c232e/e6f1ff?text=CFO" class="w-40 h-40 rounded-full mx-auto shadow-lg border-4 border-dark-secondary group-hover:border-brand-red transition-all duration-300 transform group-hover:scale-105"><h3 class="mt-4 text-xl font-bold">Peter Jones</h3><p class="text-brand-red">Chief Financial Officer</p></div>
+                            <div class="text-center group"><img src="https://placehold.co/300x300/1c232e/e6f1ff?text=CTO" class="w-40 h-40 rounded-full mx-auto shadow-lg border-4 border-dark-secondary group-hover:border-brand-red transition-all duration-300 transform group-hover:scale-105"><h3 class="mt-4 text-xl font-bold">Susan Williams</h3><p class="text-brand-red">Chief Technology Officer</p></div>
+                        </div>
+                     </div>
+                </section>
+             </main>
+        </div>
+        
+        <!-- Industries Screen -->
+        <div data-screen="industries-page" class="screen hidden">
+             <main class="pt-20 bg-dark-secondary">
+                <section class="container mx-auto px-6 py-16">
+                     <h1 class="text-4xl md:text-5xl font-bold text-center">Industries We <span class="text-brand-red">Serve</span></h1>
+                     <p class="mt-4 text-center text-light-secondary max-w-3xl mx-auto">We offer specialized expertise across a wide range of sectors, providing tailored solutions to meet the unique challenges of your industry.</p>
+                     <div class="relative mt-12">
+                         <div id="h-scroll" class="h-scroll-container flex overflow-x-auto gap-8 pb-4">
+                             <div class="industry-card flex-shrink-0 w-80 flex flex-col items-center space-y-4 p-8 bg-dark-primary rounded-lg"><i class="fas fa-microchip text-5xl text-brand-red"></i><h3 class="font-bold text-2xl pt-2 text-center">Technology</h3><p class="text-center text-light-secondary">Protecting your innovations with comprehensive coverage for software, hardware, and IT services.</p></div>
+                             <div class="industry-card flex-shrink-0 w-80 flex flex-col items-center space-y-4 p-8 bg-dark-primary rounded-lg"><i class="fas fa-heart-pulse text-5xl text-brand-red"></i><h3 class="font-bold text-2xl pt-2 text-center">Healthcare</h3><p class="text-center text-light-secondary">Navigating the complex regulatory landscape of healthcare with specialized insurance products.</p></div>
+                             <div class="industry-card flex-shrink-0 w-80 flex flex-col items-center space-y-4 p-8 bg-dark-primary rounded-lg"><i class="fas fa-piggy-bank text-5xl text-brand-red"></i><h3 class="font-bold text-2xl pt-2 text-center">Finance</h3><p class="text-center text-light-secondary">Securing financial institutions against market volatility, cyber threats, and professional liability.</p></div>
+                             <div class="industry-card flex-shrink-0 w-80 flex flex-col items-center space-y-4 p-8 bg-dark-primary rounded-lg"><i class="fas fa-industry text-5xl text-brand-red"></i><h3 class="font-bold text-2xl pt-2 text-center">Manufacturing</h3><p class="text-center text-light-secondary">Covering everything from supply chain disruptions to product liability for manufacturers.</p></div>
+                         </div>
+                         <button id="scroll-left-industries" class="h-scroll-arrow absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/2 bg-white/20 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center"><i class="fas fa-chevron-left"></i></button>
+                         <button id="scroll-right-industries" class="h-scroll-arrow absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/2 bg-white/20 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center"><i class="fas fa-chevron-right"></i></button>
+                     </div>
+                </section>
+             </main>
+        </div>
+
+         <!-- Services Screen -->
+        <div data-screen="services-page" class="screen hidden">
+             <main class="pt-20">
+                <section class="container mx-auto px-6 py-16">
+                    <h1 class="text-4xl md:text-5xl font-bold text-center">Our <span class="text-brand-red">Services</span></h1>
+                     <p class="mt-4 text-center text-light-secondary max-w-3xl mx-auto">We offer a comprehensive suite of services designed to provide you with end-to-end risk management and insurance solutions.</p>
+                     <div class="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                         <div class="bg-dark-secondary p-8 rounded-lg space-y-4"><i class="fas fa-shield-halved text-4xl text-brand-red"></i><h3 class="text-2xl font-bold pt-2">Risk Management</h3><p class="text-light-secondary">Identifying, assessing, and mitigating risks to protect your business assets and operations.</p></div>
+                         <div class="bg-dark-secondary p-8 rounded-lg space-y-4"><i class="fas fa-handshake text-4xl text-brand-red"></i><h3 class="text-2xl font-bold pt-2">Insurance Broking</h3><p class="text-light-secondary">Leveraging our market expertise to find the most suitable and cost-effective insurance coverage for you.</p></div>
+                         <div class="bg-dark-secondary p-8 rounded-lg space-y-4"><i class="fas fa-headset text-4xl text-brand-red"></i><h3 class="text-2xl font-bold pt-2">Claims Consulting</h3><p class="text-light-secondary">Providing expert assistance throughout the claims process to ensure a fair and timely settlement.</p></div>
+                     </div>
+                </section>
+             </main>
+        </div>
+        
+         <!-- Happenings Screen -->
+        <div data-screen="latest-page" class="screen hidden">
+             <main class="pt-20">
+                <section class="container mx-auto px-6 py-16">
+                     <h1 class="text-4xl md:text-5xl font-bold text-center">Latest <span class="text-brand-red">Happenings</span></h1>
+                     <p class="mt-4 text-center text-light-secondary max-w-3xl mx-auto">Stay informed with the latest news, trends, and insights from the insurance industry and our team of experts.</p>
+                     <div class="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                         <div class="bg-dark-secondary rounded-lg shadow-lg overflow-hidden group transform hover:-translate-y-2 transition-transform duration-300 hover:shadow-2xl hover:shadow-red-500/10"><img src="https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?q=80&w=1470&auto=format&fit=crop" alt="Blog Image 1" class="w-full h-64 object-cover"><div class="p-6"><h3 class="text-xl font-bold mb-2">The Changing Face of COVID-19 Claims</h3><p class="text-light-secondary mb-4">An analysis of the evolving landscape of insurance claims.</p><a href="#" class="font-semibold text-brand-red hover:underline">Read More &rarr;</a></div></div>
+                         <div class="bg-dark-secondary rounded-lg shadow-lg overflow-hidden group transform hover:-translate-y-2 transition-transform duration-300 hover:shadow-2xl hover:shadow-red-500/10"><img src="https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?q=80&w=1470&auto=format&fit=crop" alt="Blog Image 2" class="w-full h-64 object-cover"><div class="p-6"><h3 class="text-xl font-bold mb-2">Maternity: The 'C' Change</h3><p class="text-light-secondary mb-4">Exploring new trends in maternity care and benefits.</p><a href="#" class="font-semibold text-brand-red hover:underline">Read More &rarr;</a></div></div>
+                          <div class="bg-dark-secondary rounded-lg shadow-lg overflow-hidden group transform hover:-translate-y-2 transition-transform duration-300 hover:shadow-2xl hover:shadow-red-500/10"><img src="https://images.unsplash.com/photo-1554224155-1696413565d3?q=80&w=1470&auto=format&fit=crop" alt="Blog Image 3" class="w-full h-64 object-cover"><div class="p-6"><h3 class="text-xl font-bold mb-2">Cybersecurity Insurance Trends</h3><p class="text-light-secondary mb-4">Understanding the growing importance of cyber insurance in the digital age.</p><a href="#" class="font-semibold text-brand-red hover:underline">Read More &rarr;</a></div></div>
+                     </div>
+                </section>
+             </main>
+        </div>
+    </div>
+
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-dark-primary text-gray-300 py-16 border-t border-gray-800">
+        <div class="container mx-auto px-6 grid md:grid-cols-4 gap-8">
+            <div class="md:col-span-2"><h4 class="text-white text-xl font-bold mb-4">PRUDENT</h4><p class="text-light-secondary">We are dedicated to providing top-tier consulting and operational services to drive your business forward. Connect with us to build a better future.</p></div>
+            <div><h4 class="text-white text-xl font-bold mb-4">Quick Links</h4><ul class="space-y-2 text-light-secondary"><li><a data-screen-link="about-page" href="#" class="hover:text-white transition-colors">About Us</a></li><li><a data-screen-link="industries-page" href="#" class="hover:text-white transition-colors">Industries</a></li><li><a data-screen-link="services-page" href="#" class="hover:text-white transition-colors">Services</a></li><li><a data-screen-link="latest-page" href="#" class="hover:text-white transition-colors">Happenings</a></li></ul></div>
+            <div><h4 class="text-white text-xl font-bold mb-4">Contact Us</h4><ul class="space-y-2 text-light-secondary"><li class="flex items-center space-x-2"><i class="fas fa-phone text-brand-red"></i><span>+1 (555) 123-4567</span></li><li class="flex items-center space-x-2"><i class="fas fa-envelope text-brand-red"></i><span>contact@prudent.com</span></li><li class="flex items-center space-x-2"><i class="fas fa-map-marker-alt text-brand-red"></i><span>123 Business Rd, New York</span></li></ul><div class="flex space-x-4 mt-4"><a href="#" class="text-xl hover:text-brand-red transition-colors"><i class="fab fa-twitter"></i></a><a href="#" class="text-xl hover:text-brand-red transition-colors"><i class="fab fa-linkedin-in"></i></a><a href="#" class="text-xl hover:text-brand-red transition-colors"><i class="fab fa-facebook-f"></i></a></div></div>
+        </div>
+        <div class="border-t border-gray-800 mt-12 pt-6 text-center text-light-secondary"><p>&copy; 2024 Prudent. All Rights Reserved.</p></div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cursorDot = document.querySelector('.cursor-dot');
+            const cursorOutline = document.querySelector('.cursor-outline');
+            const cursorPointer = document.querySelector('.cursor-pointer');
+
+            window.addEventListener('mousemove', (e) => {
+                const posX = e.clientX;
+                const posY = e.clientY;
+                cursorDot.style.left = `${posX}px`;
+                cursorDot.style.top = `${posY}px`;
+                cursorOutline.style.left = `${posX}px`;
+                cursorOutline.style.top = `${posY}px`;
+                cursorPointer.style.left = `${posX}px`;
+                cursorPointer.style.top = `${posY}px`;
+            });
+
+            // --- Horizontal Scroll Logic ---
+            const hScroll = document.getElementById('h-scroll');
+            if (hScroll) {
+                const scrollLeftBtn = document.getElementById('scroll-left-industries');
+                const scrollRightBtn = document.getElementById('scroll-right-industries');
+                scrollLeftBtn.addEventListener('click', () => hScroll.scrollBy({ left: -352, behavior: 'smooth' })); // card width + gap
+                scrollRightBtn.addEventListener('click', () => hScroll.scrollBy({ left: 352, behavior: 'smooth' }));
+            }
+
+            // --- Header Scroll Effect ---
+            const header = document.getElementById('main-header');
+            window.addEventListener('scroll', () => { window.scrollY > 50 ? header.classList.add('header-scrolled') : header.classList.remove('header-scrolled'); });
+
+            // --- Mobile Menu Logic ---
+            const menuBtn = document.getElementById('menu-btn'), mobileMenu = document.getElementById('mobile-menu'), mobileLinks = document.querySelectorAll('.mobile-link'), navLinks = document.querySelectorAll('.nav-link'), menuIcon = menuBtn.querySelector('i');
+            
+            // --- Screen Switching Logic ---
+            const screenLinks = document.querySelectorAll('[data-screen-link]');
+            const screens = document.querySelectorAll('[data-screen]');
+            
+            function switchScreen(screenId) {
+                 screens.forEach(screen => {
+                    const isTargetScreen = screen.dataset.screen === screenId;
+                    screen.classList.toggle('hidden', !isTargetScreen);
+                });
+                // Update active nav link
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.dataset.screenLink === screenId);
+                });
+                window.scrollTo(0,0);
+                 if (!mobileMenu.classList.contains('hidden')) {
+                     mobileMenu.classList.add('hidden');
+                     menuIcon.className = 'fas fa-bars text-2xl text-white';
+                 }
+                 
+                 // Re-initialize scroll animations on the new screen
+                 const newScreen = document.querySelector(`[data-screen="${screenId}"]`);
+                 const animatedElements = newScreen.querySelectorAll('.scroll-animate');
+                 const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } }); }, { threshold: 0.1 });
+                 animatedElements.forEach(el => observer.observe(el));
+            }
+
+            screenLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    switchScreen(link.dataset.screenLink);
+                });
+            });
+
+             menuBtn.addEventListener('click', () => { 
+                const isOpen = mobileMenu.classList.contains('hidden'); 
+                mobileMenu.classList.toggle('hidden'); 
+                menuIcon.className = isOpen ? 'fas fa-times text-2xl text-white' : 'fas fa-bars text-2xl text-white'; 
+             });
+
+            // Initial setup
+            switchScreen('home');
+        });
+    </script>
+</body>
+</html>
