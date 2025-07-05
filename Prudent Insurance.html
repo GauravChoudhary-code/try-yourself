@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prudent - Better Today for a Better Tomorrow</title>
+
+    <!-- FONTS & ICONS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- FRAMEWORK & ANIMATION LIBRARIES -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+
+    <style>
+        /* ---------------------------------- */
+        /* CORE STYLES & VARIABLES          */
+        /* ---------------------------------- */
+        :root {
+            --bg-dark-primary: #101418;
+            --bg-dark-secondary: #1c232e;
+            --text-light-primary: #e6f1ff;
+            --text-light-secondary: #8892b0;
+            --brand-red: #ef4444;
+            --brand-red-dark: #dc2626;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-light-primary);
+            background-color: var(--bg-dark-primary);
+            /* Removed cursor: none; to restore default browser cursor */
+        }
+        
+        /* ---------------------------------- */
+        /* MOUSE CURSOR STYLES REMOVED      */
+        /* ---------------------------------- */
+
+        /* ---------------------------------- */
+        /* HEADER & NAVIGATION              */
+        /* ---------------------------------- */
+        .header-scrolled {
+            background-color: rgba(16, 20, 24, 0.85);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+            padding-bottom: 4px;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--brand-red);
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--brand-red);
+            transition: width 0.3s ease-out;
+        }
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 100%;
+        }
+
+        /* ---------------------------------- */
+        /* REVAMPED MOBILE NAVIGATION       */
+        /* ---------------------------------- */
+        #mobile-menu {
+            opacity: 0;
+            pointer-events: none;
+            background-color: rgba(16, 20, 24, 0.95);
+            backdrop-filter: blur(10px);
+            transition: opacity 0.4s ease;
+        }
+        #mobile-menu.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .mobile-link {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        #mobile-menu.active .mobile-link {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Staggered animation for mobile links */
+        #mobile-menu.active .mobile-link:nth-child(1) { transition-delay: 0.2s; }
+        #mobile-menu.active .mobile-link:nth-child(2) { transition-delay: 0.25s; }
+        #mobile-menu.active .mobile-link:nth-child(3) { transition-delay: 0.3s; }
+        #mobile-menu.active .mobile-link:nth-child(4) { transition-delay: 0.35s; }
+        #mobile-menu.active .mobile-link:nth-child(5) { transition-delay: 0.4s; }
+        #mobile-menu.active .mobile-link:nth-child(6) { transition-delay: 0.45s; }
+        #mobile-menu.active .mobile-link:nth-child(7) { transition-delay: 0.5s; }
+        
+        /* Animated hamburger icon */
+        #menu-btn .hamburger-top,
+        #menu-btn .hamburger-middle,
+        #menu-btn .hamburger-bottom {
+            position: absolute;
+            width: 24px;
+            height: 2px;
+            background-color: var(--text-light-primary);
+            transition: all 0.3s;
+        }
+        #menu-btn .hamburger-top { transform: translateY(-7px); }
+        #menu-btn .hamburger-bottom { transform: translateY(7px); }
+        #menu-btn.open .hamburger-top { transform: rotate(45deg); }
+        #menu-btn.open .hamburger-middle { display: none; }
+        #menu-btn.open .hamburger-bottom { transform: rotate(-45deg); }
+
+        /* ---------------------------------- */
+        /* COMPONENTS & LAYOUT HELPERS      */
+        /* ---------------------------------- */
+        .text-brand-red { color: var(--brand-red); }
+        .bg-brand-red { background-color: var(--brand-red); }
+        .cta-btn {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .cta-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+        }
+        .h-scroll-container {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .h-scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+        .industry-card {
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        .industry-card:hover {
+            transform: scale(1.05);
+            background-color: var(--bg-dark-primary);
+        }
+        .screen {
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .screen.hidden {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            height: 0;
+            overflow: hidden;
+        }
+        .why-prudent-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+        @media (max-width: 768px) {
+            .why-prudent-wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* ---------------------------------- */
+        /* GEMINI AI & CAREERS FORM STYLES  */
+        /* ---------------------------------- */
+        .form-input, .form-textarea {
+            background-color: var(--bg-dark-secondary);
+            border: 1px solid #3a475c;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--brand-red);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3);
+        }
+        .gemini-btn {
+            background: linear-gradient(90deg, #ef4444, #f87171);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .gemini-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(239, 68, 68, 0.25);
+        }
+        #gemini-result h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--brand-red);
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid var(--bg-dark-secondary);
+        }
+        #gemini-result ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        #gemini-result li {
+            margin-bottom: 0.5rem;
+        }
+        #gemini-result strong {
+            color: var(--text-light-primary);
+        }
+        
+        /* Loading & Message Modal */
+        .modal {
+            background-color: rgba(16, 20, 24, 0.8);
+            backdrop-filter: blur(5px);
+        }
+        .loader {
+            border: 4px solid var(--bg-dark-secondary);
+            border-top: 4px solid var(--brand-red);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+    <!-- Custom Cursor Elements Removed -->
+
+    <!-- Header -->
+    <header id="main-header" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" data-screen-link="home" class="text-2xl font-bold tracking-wider">
+                <img src="https://assets-global.website-files.com/659c1851242c595363a0d6c3/659c1851242c595363a0d71a_logo-white.svg" alt="Prudent Logo" class="h-10 w-auto" onerror="this.onerror=null;this.src='https://placehold.co/150x40/101418/e6f1ff?text=Prudent';">
+            </a>
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#" data-screen-link="home" class="nav-link font-semibold active">Home</a>
+                <a href="#" data-screen-link="about-page" class="nav-link font-semibold">About Us</a>
+                <a href="#" data-screen-link="industries-page" class="nav-link font-semibold">Industries</a>
+                <a href="#" data-screen-link="services-page" class="nav-link font-semibold">Services</a>
+                <a href="#" data-screen-link="latest-page" class="nav-link font-semibold">Happenings</a>
+                <a href="#" data-screen-link="careers-page" class="nav-link font-semibold">Careers</a>
+            </nav>
+            <a href="#contact" class="hidden md:inline-block bg-brand-red text-white font-semibold px-5 py-2 rounded-lg hover:bg-brand-red-dark transition-colors cta-btn">Contact</a>
+            <button id="menu-btn" class="md:hidden z-50 w-8 h-8 relative focus:outline-none">
+                <span class="hamburger-top"></span>
+                <span class="hamburger-middle"></span>
+                <span class="hamburger-bottom"></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-0 z-40">
+        <nav class="flex flex-col items-center justify-center h-full space-y-8 text-2xl font-semibold">
+            <a href="#" data-screen-link="home" class="mobile-link">Home</a>
+            <a href="#" data-screen-link="about-page" class="mobile-link">About Us</a>
+            <a href="#" data-screen-link="industries-page" class="mobile-link">Industries</a>
+            <a href="#" data-screen-link="services-page" class="mobile-link">Services</a>
+            <a href="#" data-screen-link="latest-page" class="mobile-link">Happenings</a>
+            <a href="#" data-screen-link="careers-page" class="mobile-link">Careers</a>
+            <a href="#contact" class="mobile-link bg-brand-red text-white px-6 py-3 rounded-lg mt-4">Contact</a>
+        </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <div id="main-content" class="relative">
+        <!-- Home Screen -->
+        <div data-screen="home" class="screen">
+            <main>
+                <section class="relative min-h-screen flex items-center justify-center text-white bg-gray-900">
+                    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1560421683-6223b8434389?q=80&w=2070&auto=format&fit=crop');"></div>
+                    <div class="absolute inset-0 bg-black/70"></div>
+                    <div id="hero-content" class="relative z-10 text-center p-6">
+                        <h1 class="text-4xl md:text-6xl font-bold">Better <span class="text-brand-red">Today</span> for a Better <span class="text-brand-red">Tomorrow</span></h1>
+                        <p class="mt-6 text-lg text-light-secondary max-w-2xl mx-auto">Providing expert guidance and innovative insurance solutions to safeguard your future.</p>
+                        <a href="#" data-screen-link="about-page" class="inline-block bg-brand-red text-white font-semibold px-8 py-3 rounded-lg hover:bg-brand-red-dark transition-colors cta-btn mt-8">Discover Prudent</a>
+                    </div>
+                </section>
+                <section class="py-24" id="why-prudent-section">
+                    <div class="container mx-auto px-6">
+                        <div class="why-prudent-wrapper">
+                            <div id="prudent-image-container">
+                                <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070&auto=format&fit=crop" alt="Prudent Team in a modern office" class="rounded-lg shadow-2xl w-full">
+                            </div>
+                            <div id="prudent-text-container" class="space-y-4">
+                                <h2 class="text-3xl md:text-4xl font-bold">Why <span class="text-brand-red">Prudent?</span></h2>
+                                <p class="text-lg text-light-secondary">With two decades of experience, we combine deep industry knowledge with a client-first approach to deliver exceptional results.</p>
+                                <ul class="space-y-2 pt-2">
+                                    <li class="flex items-center prudent-feature"><i class="fas fa-check-circle text-brand-red mr-3"></i><span>Tailored Insurance Solutions</span></li>
+                                    <li class="flex items-center prudent-feature"><i class="fas fa-check-circle text-brand-red mr-3"></i><span>Expert Risk Assessment</span></li>
+                                    <li class="flex items-center prudent-feature"><i class="fas fa-check-circle text-brand-red mr-3"></i><span>Dedicated Claims Support</span></li>
+                                </ul>
+                                <a href="#" data-screen-link="about-page" class="inline-block bg-brand-red text-white font-semibold px-6 py-3 rounded-lg hover:bg-brand-red-dark transition-colors cta-btn mt-6">More About Us</a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="bg-dark-secondary py-24">
+                    <div class="container mx-auto px-6 text-center">
+                        <h2 class="text-3xl md:text-4xl font-bold">Our Core Services</h2>
+                        <p class="mt-4 text-center text-light-secondary max-w-2xl mx-auto">We offer a comprehensive suite of services to manage your risks effectively.</p>
+                        <div class="mt-12 grid md:grid-cols-3 gap-8">
+                            <div class="service-card bg-dark-primary p-8 rounded-lg space-y-4 text-center"><i class="fas fa-shield-halved text-4xl text-brand-red"></i><h3 class="text-2xl font-bold pt-2">Risk Management</h3><p class="text-light-secondary">Identifying and mitigating risks to protect your business.</p></div>
+                            <div class="service-card bg-dark-primary p-8 rounded-lg space-y-4 text-center"><i class="fas fa-handshake text-4xl text-brand-red"></i><h3 class="text-2xl font-bold pt-2">Insurance Broking</h3><p class="text-light-secondary">Finding the most suitable and cost-effective coverage for you.</p></div>
+                            <div class="service-card bg-dark-primary p-8 rounded-lg space-y-4 text-center"><i class="fas fa-headset text-4xl text-brand-red"></i><h3 class="text-2xl font-bold pt-2">Claims Consulting</h3><p class="text-light-secondary">Expert assistance to ensure a fair and timely settlement.</p></div>
+                        </div>
+                    </div>
+                </section>
+                <section class="py-24">
+                    <div class="container mx-auto px-6 text-center max-w-3xl">
+                        <h2 class="text-3xl md:text-4xl font-bold">What Our Clients Say</h2>
+                        <div class="mt-8">
+                            <i class="fas fa-quote-left text-4xl text-brand-red/50"></i>
+                            <p class="text-xl italic text-light-secondary my-4">"Prudent's team provided us with exceptional service and a policy that was perfectly tailored to our needs. Their professionalism and expertise are second to none."</p>
+                            <p class="font-bold text-lg">Jane Smith</p>
+                            <p class="text-light-secondary">COO, Innovate Corp</p>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- About Us Screen -->
+        <div data-screen="about-page" class="screen hidden">
+            <main class="pt-20">
+                <section class="container mx-auto px-6 py-16">
+                    <h1 class="text-4xl md:text-5xl font-bold text-center">About <span class="text-brand-red">Prudent</span></h1>
+                    <div class="mt-12 grid md:grid-cols-2 gap-12 items-start">
+                        <div class="space-y-6">
+                            <h2 class="text-3xl font-bold">Our Mission</h2>
+                            <p class="text-light-secondary leading-relaxed">To provide unparalleled service and innovative solutions in the insurance brokerage industry, empowering our clients to navigate the future with confidence. We are dedicated to building lasting relationships based on trust, transparency, and a deep understanding of our clients' unique needs.</p>
+                            <h2 class="text-3xl font-bold mt-8">Our Values</h2>
+                            <ul class="space-y-3 text-light-secondary">
+                                <li class="flex items-start"><i class="fas fa-check-circle text-brand-red mt-1 mr-3"></i><span><strong class="text-light-primary">Integrity:</strong> Upholding the highest ethical standards in all our actions.</span></li>
+                                <li class="flex items-start"><i class="fas fa-check-circle text-brand-red mt-1 mr-3"></i><span><strong class="text-light-primary">Client-Centric:</strong> Placing our clients at the heart of everything we do.</span></li>
+                                <li class="flex items-start"><i class="fas fa-check-circle text-brand-red mt-1 mr-3"></i><span><strong class="text-light-primary">Excellence:</strong> Continuously striving for excellence and innovation.</span></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop" alt="A team discussing strategy around a table" class="rounded-lg shadow-2xl w-full">
+                        </div>
+                    </div>
+                    <div class="mt-24">
+                        <h2 class="text-3xl font-bold text-center mb-12">Meet Our Leadership</h2>
+                        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                            <div class="text-center group"><img src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=2070&auto=format&fit=crop" class="w-40 h-40 object-cover rounded-full mx-auto shadow-lg border-4 border-dark-secondary group-hover:border-brand-red transition-all duration-300 transform group-hover:scale-105" alt="Headshot of John Doe"><h3 class="mt-4 text-xl font-bold">John Doe</h3><p class="text-brand-red">Chief Executive Officer</p></div>
+                            <div class="text-center group"><img src="https://images.unsplash.com/photo-1557862921-37829c790f19?q=80&w=2071&auto=format&fit=crop" class="w-40 h-40 object-cover rounded-full mx-auto shadow-lg border-4 border-dark-secondary group-hover:border-brand-red transition-all duration-300 transform group-hover:scale-105" alt="Headshot of Jane Smith"><h3 class="mt-4 text-xl font-bold">Jane Smith</h3><p class="text-brand-red">Chief Operating Officer</p></div>
+                            <div class="text-center group"><img src="https://images.unsplash.com/photo-1566753323558-f4e0952af115?q=80&w=1921&auto=format&fit=crop" class="w-40 h-40 object-cover rounded-full mx-auto shadow-lg border-4 border-dark-secondary group-hover:border-brand-red transition-all duration-300 transform group-hover:scale-105" alt="Headshot of Peter Jones"><h3 class="mt-4 text-xl font-bold">Peter Jones</h3><p class="text-brand-red">Chief Financial Officer</p></div>
+                            <div class="text-center group"><img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=2070&auto=format&fit=crop" class="w-40 h-40 object-cover rounded-full mx-auto shadow-lg border-4 border-dark-secondary group-hover:border-brand-red transition-all duration-300 transform group-hover:scale-105" alt="Headshot of Susan Williams"><h3 class="mt-4 text-xl font-bold">Susan Williams</h3><p class="text-brand-red">Chief Technology Officer</p></div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+        
+        <!-- Industries Screen -->
+        <div data-screen="industries-page" class="screen hidden">
+            <main class="pt-20 bg-dark-secondary">
+                <section class="container mx-auto px-6 py-16">
+                    <h1 class="text-4xl md:text-5xl font-bold text-center">Industries We <span class="text-brand-red">Serve</span></h1>
+                    <p class="mt-4 text-center text-light-secondary max-w-3xl mx-auto">We offer specialized expertise across a wide range of sectors, providing tailored solutions to meet the unique challenges of your industry.</p>
+                    <div class="relative mt-12">
+                        <div id="h-scroll" class="h-scroll-container flex overflow-x-auto gap-8 pb-4">
+                            <div class="industry-card flex-shrink-0 w-80 flex flex-col items-center space-y-4 p-8 bg-dark-primary rounded-lg"><i class="fas fa-microchip text-5xl text-brand-red"></i><h3 class="font-bold text-2xl pt-2 text-center">Technology</h3><p class="text-center text-light-secondary">Protecting your innovations with comprehensive coverage for software, hardware, and IT services.</p></div>
+                            <div class="industry-card flex-shrink-0 w-80 flex flex-col items-center space-y-4 p-8 bg-dark-primary rounded-lg"><i class="fas fa-heart-pulse text-5xl text-brand-red"></i><h3 class="font-bold text-2xl pt-2 text-center">Healthcare</h3><p class="text-center text-light-secondary">Navigating the complex regulatory landscape of healthcare with specialized insurance products.</p></div>
+                            <div class="industry-card flex-shrink-0 w-80 flex flex-col items-center space-y-4 p-8 bg-dark-primary rounded-lg"><i class="fas fa-piggy-bank text-5xl text-brand-red"></i><h3 class="font-bold text-2xl pt-2 text-center">Finance</h3><p class="text-center text-light-secondary">Securing financial institutions against market volatility, cyber threats, and professional liability.</p></div>
+                            <div class="industry-card flex-shrink-0 w-80 flex flex-col items-center space-y-4 p-8 bg-dark-primary rounded-lg"><i class="fas fa-industry text-5xl text-brand-red"></i><h3 class="font-bold text-2xl pt-2 text-center">Manufacturing</h3><p class="text-center text-light-secondary">Covering everything from supply chain disruptions to product liability for manufacturers.</p></div>
+                        </div>
+                        <button id="scroll-left-industries" class="h-scroll-arrow absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/2 bg-white/20 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center"><i class="fas fa-chevron-left"></i></button>
+                        <button id="scroll-right-industries" class="h-scroll-arrow absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/2 bg-white/20 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- Services Screen -->
+        <div data-screen="services-page" class="screen hidden">
+            <main class="pt-20">
+                <section class="container mx-auto px-6 py-16">
+                    <h1 class="text-4xl md:text-5xl font-bold text-center">Our <span class="text-brand-red">Services</span></h1>
+                    <p class="mt-4 text-center text-light-secondary max-w-3xl mx-auto">We offer a comprehensive suite of services designed to provide you with end-to-end risk management and insurance solutions.</p>
+                    <div class="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="bg-dark-secondary p-8 rounded-lg space-y-4"><i class="fas fa-shield-halved text-4xl text-brand-red"></i><h3 class="text-2xl font-bold pt-2">Risk Management</h3><p class="text-light-secondary">Identifying, assessing, and mitigating risks to protect your business assets and operations.</p></div>
+                        <div class="bg-dark-secondary p-8 rounded-lg space-y-4"><i class="fas fa-handshake text-4xl text-brand-red"></i><h3 class="text-2xl font-bold pt-2">Insurance Broking</h3><p class="text-light-secondary">Leveraging our market expertise to find the most suitable and cost-effective insurance coverage for you.</p></div>
+                        <div class="bg-dark-secondary p-8 rounded-lg space-y-4"><i class="fas fa-headset text-4xl text-brand-red"></i><h3 class="text-2xl font-bold pt-2">Claims Consulting</h3><p class="text-light-secondary">Providing expert assistance throughout the claims process to ensure a fair and timely settlement.</p></div>
+                    </div>
+                </section>
+                <section id="ai-risk-assessment-tool" class="py-24 border-t border-gray-800">
+                    <div class="container mx-auto px-6 max-w-4xl">
+                        <div class="text-center">
+                            <h2 class="text-3xl md:text-4xl font-bold">✨ AI-Powered Risk Assessment</h2>
+                            <p class="mt-4 text-light-secondary max-w-2xl mx-auto">Describe your business or situation below to get an instant, AI-generated risk analysis and insurance recommendation.</p>
+                        </div>
+                        <div class="mt-12">
+                            <textarea id="risk-input" rows="6" class="w-full p-4 rounded-lg text-light-primary placeholder-light-secondary form-textarea" placeholder="e.g., I'm opening a small bookstore in a suburban shopping center. I will have two part-time employees and will also sell coffee."></textarea>
+                            <button id="analyze-risk-btn" class="gemini-btn w-full md:w-auto mt-4 px-8 py-3 font-semibold text-white rounded-lg flex items-center justify-center gap-2">
+                                <i class="fas fa-wand-magic-sparkles"></i>
+                                <span>Analyze My Risk</span>
+                            </button>
+                        </div>
+                        <div id="gemini-result-container" class="mt-12 bg-dark-secondary p-6 rounded-lg hidden">
+                            <h2 class="text-2xl font-bold mb-4 text-light-primary">Your Personalized Risk Report</h2>
+                            <div id="gemini-result" class="text-light-secondary leading-relaxed"></div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+        
+        <!-- Happenings Screen -->
+        <div data-screen="latest-page" class="screen hidden">
+            <main class="pt-20">
+                <section class="container mx-auto px-6 py-16">
+                    <h1 class="text-4xl md:text-5xl font-bold text-center">Latest <span class="text-brand-red">Happenings</span></h1>
+                    <p class="mt-4 text-center text-light-secondary max-w-3xl mx-auto">Stay informed with the latest news, trends, and insights from the insurance industry and our team of experts.</p>
+                    <div class="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="bg-dark-secondary rounded-lg shadow-lg overflow-hidden group transform hover:-translate-y-2 transition-transform duration-300 hover:shadow-2xl hover:shadow-red-500/10"><img src="https://images.unsplash.com/photo-1587854692152-cbe660dbde88?q=80&w=2070&auto=format&fit=crop" alt="Medical professional looking at data" class="w-full h-64 object-cover"><div class="p-6"><h3 class="text-xl font-bold mb-2">The Changing Face of COVID-19 Claims</h3><p class="text-light-secondary mb-4">An analysis of the evolving landscape of insurance claims.</p><a href="#" class="font-semibold text-brand-red hover:underline">Read More &rarr;</a></div></div>
+                        <div class="bg-dark-secondary rounded-lg shadow-lg overflow-hidden group transform hover:-translate-y-2 transition-transform duration-300 hover:shadow-2xl hover:shadow-red-500/10"><img src="https://images.unsplash.com/photo-1515688594390-b649fe5876de?q=80&w=1956&auto=format&fit=crop" alt="A mother holding her newborn child" class="w-full h-64 object-cover"><div class="p-6"><h3 class="text-xl font-bold mb-2">Maternity: The 'C' Change</h3><p class="text-light-secondary mb-4">Exploring new trends in maternity care and benefits.</p><a href="#" class="font-semibold text-brand-red hover:underline">Read More &rarr;</a></div></div>
+                        <div class="bg-dark-secondary rounded-lg shadow-lg overflow-hidden group transform hover:-translate-y-2 transition-transform duration-300 hover:shadow-2xl hover:shadow-red-500/10"><img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop" alt="Abstract image of network security" class="w-full h-64 object-cover"><div class="p-6"><h3 class="text-xl font-bold mb-2">Cybersecurity Insurance Trends</h3><p class="text-light-secondary mb-4">Understanding the growing importance of cyber insurance in the digital age.</p><a href="#" class="font-semibold text-brand-red hover:underline">Read More &rarr;</a></div></div>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- NEW Careers Screen -->
+        <div data-screen="careers-page" class="screen hidden">
+            <main class="pt-20">
+                <section class="container mx-auto px-6 py-16">
+                    <div class="text-center max-w-3xl mx-auto">
+                        <h1 class="text-4xl md:text-5xl font-bold">Join Our Team at <span class="text-brand-red">Prudent</span></h1>
+                        <p class="mt-4 text-light-secondary leading-relaxed">We're looking for passionate, innovative, and client-focused individuals to help us shape the future of insurance. At Prudent, you'll find a collaborative environment where your ideas are valued and your growth is a priority.</p>
+                    </div>
+                </section>
+                <section class="bg-dark-secondary py-24">
+                    <div class="container mx-auto px-6">
+                        <h2 class="text-3xl font-bold text-center mb-12">Current Openings</h2>
+                        <div class="space-y-6 max-w-4xl mx-auto">
+                            <!-- Job Opening 1 -->
+                            <div class="bg-dark-primary p-6 rounded-lg flex flex-col md:flex-row justify-between items-center gap-4">
+                                <div>
+                                    <h3 class="text-xl font-bold text-light-primary">Senior Risk Analyst</h3>
+                                    <p class="text-light-secondary">Gurugram, Haryana &bull; Full-time</p>
+                                </div>
+                                <a href="#application-form" class="cta-btn bg-brand-red text-white font-semibold px-6 py-2 rounded-lg shrink-0">Apply Now</a>
+                            </div>
+                            <!-- Job Opening 2 -->
+                            <div class="bg-dark-primary p-6 rounded-lg flex flex-col md:flex-row justify-between items-center gap-4">
+                                <div>
+                                    <h3 class="text-xl font-bold text-light-primary">Client Relationship Manager</h3>
+                                    <p class="text-light-secondary">Mumbai, Maharashtra &bull; Full-time</p>
+                                </div>
+                                <a href="#application-form" class="cta-btn bg-brand-red text-white font-semibold px-6 py-2 rounded-lg shrink-0">Apply Now</a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section id="application-form" class="py-24">
+                    <div class="container mx-auto px-6 max-w-4xl">
+                        <h2 class="text-3xl font-bold text-center mb-8">Apply Now</h2>
+                        <form id="career-form" class="space-y-6">
+                            <div>
+                                <label for="name" class="block mb-2 font-semibold">Full Name</label>
+                                <input type="text" id="name" name="name" class="w-full p-3 rounded-lg form-input" required>
+                            </div>
+                             <div>
+                                <label for="email" class="block mb-2 font-semibold">Email Address</label>
+                                <input type="email" id="email" name="email" class="w-full p-3 rounded-lg form-input" required>
+                            </div>
+                            <div>
+                                <label for="position" class="block mb-2 font-semibold">Position Applying For</label>
+                                <select id="position" name="position" class="w-full p-3 rounded-lg form-input">
+                                    <option>Senior Risk Analyst</option>
+                                    <option>Client Relationship Manager</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="cover-letter" class="block mb-2 font-semibold">Cover Letter & Resume</label>
+                                <textarea id="cover-letter" name="cover-letter" rows="8" class="w-full p-3 rounded-lg form-textarea" placeholder="Paste your cover letter and a link to your resume or portfolio here..." required></textarea>
+                            </div>
+                            <div>
+                                <button type="submit" class="gemini-btn w-full md:w-auto px-8 py-3 font-semibold text-white rounded-lg flex items-center justify-center gap-2">
+                                    <i class="fas fa-paper-plane"></i>
+                                    <span>Submit Application</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-dark-primary text-gray-300 py-16 border-t border-gray-800">
+        <div class="container mx-auto px-6 grid md:grid-cols-4 gap-8">
+            <div class="md:col-span-2"><h4 class="text-white text-xl font-bold mb-4">PRUDENT</h4><p class="text-light-secondary">We are dedicated to providing top-tier consulting and operational services to drive your business forward. Connect with us to build a better future.</p></div>
+            <div><h4 class="text-white text-xl font-bold mb-4">Quick Links</h4><ul class="space-y-2 text-light-secondary"><li><a data-screen-link="about-page" href="#" class="hover:text-white transition-colors">About Us</a></li><li><a data-screen-link="industries-page" href="#" class="hover:text-white transition-colors">Industries</a></li><li><a data-screen-link="services-page" href="#" class="hover:text-white transition-colors">Services</a></li><li><a data-screen-link="latest-page" href="#" class="hover:text-white transition-colors">Happenings</a></li><li><a data-screen-link="careers-page" href="#" class="hover:text-white transition-colors">Careers</a></li></ul></div>
+            <div><h4 class="text-white text-xl font-bold mb-4">Contact Us</h4><ul class="space-y-2 text-light-secondary"><li class="flex items-center space-x-2"><i class="fas fa-phone text-brand-red"></i><span>+1 (555) 123-4567</span></li><li class="flex items-center space-x-2"><i class="fas fa-envelope text-brand-red"></i><span>contact@prudent.com</span></li><li class="flex items-center space-x-2"><i class="fas fa-map-marker-alt text-brand-red"></i><span>123 Business Rd, New York</span></li></ul><div class="flex space-x-4 mt-4"><a href="#" class="text-xl hover:text-brand-red transition-colors"><i class="fab fa-twitter"></i></a><a href="#" class="text-xl hover:text-brand-red transition-colors"><i class="fab fa-linkedin-in"></i></a><a href="#" class="text-xl hover:text-brand-red transition-colors"><i class="fab fa-facebook-f"></i></a></div></div>
+        </div>
+        <div class="border-t border-gray-800 mt-12 pt-6 text-center text-light-secondary"><p>&copy; 2025 Prudent. All Rights Reserved.</p></div>
+    </footer>
+
+    <!-- Universal Modal for Loading and Messages -->
+    <div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal">
+        <div id="modal-content" class="text-center">
+            <!-- Loader will be injected here by JS -->
+        </div>
+    </div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // --- 1. CORE ENGINE: SETUP LENIS & GSAP ---
+        gsap.registerPlugin(ScrollTrigger);
+        const lenis = new Lenis();
+        lenis.on('scroll', ScrollTrigger.update);
+        gsap.ticker.add((time) => {
+            lenis.raf(time * 1000);
+        });
+        gsap.ticker.lagSmoothing(0);
+
+        // --- 2. MOUSE CURSOR LOGIC REMOVED ---
+        
+        // --- 3. FLUID ANIMATIONS ---
+        function initFluidAnimations() {
+            gsap.to("#hero-content", {
+                scrollTrigger: { trigger: "#hero-content", start: "top top", end: "bottom top", scrub: true },
+                y: -100, opacity: 0, ease: "power1.in"
+            });
+            if (window.innerWidth > 768) {
+                const tl = gsap.timeline({
+                    scrollTrigger: { trigger: "#why-prudent-section", start: "top top", end: "+=150%", pin: "#prudent-text-container", scrub: 1 }
+                });
+                tl.from(".prudent-feature", { opacity: 0.3, stagger: 0.5 }).to(".prudent-feature", { opacity: 1, stagger: 0.5 });
+            }
+            gsap.from(".service-card", {
+                scrollTrigger: { trigger: ".service-card", start: "top 80%", toggleActions: "play none none reverse" },
+                y: 100, opacity: 0, stagger: 0.2, ease: "power2.out"
+            });
+        }
+
+        // --- 4. INTERACTIVE FORMS LOGIC ---
+        const modal = document.getElementById('modal');
+        const modalContent = document.getElementById('modal-content');
+
+        function showModal(content) {
+            modalContent.innerHTML = content;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function hideModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Gemini AI Risk Assessment
+        const analyzeBtn = document.getElementById('analyze-risk-btn');
+        const riskInput = document.getElementById('risk-input');
+        const resultContainer = document.getElementById('gemini-result-container');
+        const geminiResultDiv = document.getElementById('gemini-result');
+
+        if(analyzeBtn) {
+            analyzeBtn.addEventListener('click', async () => {
+                const userInput = riskInput.value.trim();
+                if (!userInput) {
+                    geminiResultDiv.innerHTML = '<p>Please describe your situation first.</p>';
+                    resultContainer.classList.remove('hidden');
+                    return;
+                }
+                showModal('<div class="loader"></div>');
+                resultContainer.classList.add('hidden');
+                const prompt = `As an expert risk management consultant for "Prudent," an insurance brokerage firm, analyze the following business/personal situation described by a potential client. Your goal is to provide a clear, concise, and helpful preliminary risk assessment that demonstrates our expertise and encourages them to seek a full consultation. **Client's Situation:** "${userInput}" **Your Response Structure (use Markdown):** 1. **Overall Risk Profile:** Start with a brief, one-sentence summary of the overall risk level (e.g., Low, Moderate, High). 2. ### Key Risk Areas - Identify 3-4 primary risk categories based on the description (e.g., Public Liability, Property Damage, Professional Errors, Employee-Related Risks). - For each risk, briefly explain in simple terms what it means for the client. 3. ### Recommended Insurance Coverage - Suggest 3-4 specific types of insurance policies that would address these risks (e.g., General Liability Insurance, Commercial Property Insurance, Professional Indemnity, Workers' Compensation). - Briefly explain what each recommended policy typically covers. 4. ### Next Steps - Conclude with a friendly and professional call to action, advising the client that this is a preliminary analysis and they should contact Prudent for a comprehensive consultation to get a tailored insurance solution.`;
+                try {
+                    let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                    const payload = { contents: chatHistory };
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+                    const result = await response.json();
+                    if (result.candidates && result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        geminiResultDiv.innerHTML = marked.parse(text);
+                        resultContainer.classList.remove('hidden');
+                        lenis.scrollTo('#gemini-result-container', { offset: -100 });
+                    } else { throw new Error("No content received from API."); }
+                } catch (error) {
+                    console.error("Error calling Gemini API:", error);
+                    geminiResultDiv.innerHTML = '<p class="text-brand-red">Sorry, we encountered an error trying to analyze your risk. Please try again later.</p>';
+                    resultContainer.classList.remove('hidden');
+                } finally {
+                    hideModal();
+                }
+            });
+        }
+        
+        // Career Application Form
+        const careerForm = document.getElementById('career-form');
+        if(careerForm) {
+            careerForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                showModal('<div class="loader"></div>');
+                setTimeout(() => {
+                    careerForm.reset();
+                    const successMessage = `<div class="bg-dark-secondary p-8 rounded-lg text-center"><i class="fas fa-check-circle text-green-500 text-5xl mb-4"></i><h3 class="text-2xl font-bold text-light-primary">Application Submitted!</h3><p class="text-light-secondary mt-2">Thank you for your interest in Prudent. We have received your application and will be in touch if your profile matches our requirements.</p><button id="close-modal-btn" class="cta-btn bg-brand-red text-white font-semibold px-6 py-2 rounded-lg mt-6">Close</button></div>`;
+                    showModal(successMessage);
+                    document.getElementById('close-modal-btn').addEventListener('click', hideModal);
+                }, 1500);
+            });
+        }
+
+        // --- 5. SITE & SCREEN SWITCHING LOGIC ---
+        const header = document.getElementById('main-header');
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const screenLinks = document.querySelectorAll('[data-screen-link]');
+        const screens = document.querySelectorAll('[data-screen]');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        window.addEventListener('scroll', () => {
+            header.classList.toggle('header-scrolled', window.scrollY > 50);
+        });
+
+        menuBtn.addEventListener('click', () => {
+            menuBtn.classList.toggle('open');
+            mobileMenu.classList.toggle('active');
+        });
+
+        function switchScreen(screenId) {
+            ScrollTrigger.getAll().forEach(st => st.kill());
+            screens.forEach(screen => {
+                screen.classList.toggle('hidden', screen.dataset.screen !== screenId);
+            });
+            navLinks.forEach(link => {
+                link.classList.toggle('active', link.dataset.screenLink === screenId);
+            });
+            lenis.scrollTo(0, { immediate: true });
+            if (mobileMenu.classList.contains('active')) {
+                menuBtn.classList.remove('open');
+                mobileMenu.classList.remove('active');
+            }
+            if (screenId === 'home') {
+                setTimeout(() => {
+                    initFluidAnimations();
+                    ScrollTrigger.refresh();
+                }, 100);
+            } else {
+                 ScrollTrigger.refresh();
+            }
+        }
+
+        screenLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                const targetScreen = link.dataset.screenLink;
+                const targetHref = link.getAttribute('href');
+                if (targetScreen) {
+                    e.preventDefault();
+                    switchScreen(targetScreen);
+                } else if (targetHref === '#contact' || targetHref === '#application-form') {
+                    e.preventDefault();
+                    lenis.scrollTo(targetHref, {offset: -100});
+                    if (mobileMenu.classList.contains('active')) {
+                        menuBtn.classList.remove('open');
+                        mobileMenu.classList.remove('active');
+                    }
+                }
+            });
+        });
+
+        const hScroll = document.getElementById('h-scroll');
+        if (hScroll) {
+            const scrollLeftBtn = document.getElementById('scroll-left-industries');
+            const scrollRightBtn = document.getElementById('scroll-right-industries');
+            scrollLeftBtn.addEventListener('click', () => hScroll.scrollBy({ left: -352, behavior: 'smooth' }));
+            scrollRightBtn.addEventListener('click', () => hScroll.scrollBy({ left: 352, behavior: 'smooth' }));
+        }
+
+        // --- INITIAL PAGE LOAD ---
+        switchScreen('home');
+    });
+    </script>
+</body>
+</html>
